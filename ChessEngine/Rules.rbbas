@@ -117,6 +117,7 @@ Protected Module Rules
 
 	#tag Method, Flags = &h1
 		Protected Function IsUnderAttack(Board As ChessEngine.Board, Row As Integer, Column As Integer) As Integer
+		  #pragma Warning "Fix me"
 		  For i As Integer = 0 To 7
 		    For j As Integer = 0 To 7
 		      If Board.Rank(i, j) = Ranks.None Or Board.Rank(i, j) = Ranks.OutOfBounds Then Continue
@@ -143,6 +144,14 @@ Protected Module Rules
 		    moves.Append(Row - 1:Column - 1)
 		    moves.Append(Row - 1:Column + 1)
 		  End If
+		  
+		  If Column < 7 Then
+		    moves.Append(Row:Column + 1)
+		  End If
+		  If Column > 1 Then
+		    moves.Append(Row:Column - 1)
+		  End If
+		  
 		  If Not Board.Modified(Row, Column) Then ' King not moved yet
 		    If Board.Player(Row, Column - 1) = -1 _
 		      And Board.Player(Row, Column - 2) = -1 _
@@ -154,13 +163,13 @@ Protected Module Rules
 		        And Board.Player(Row, Column - 4) = Board.Player(Row, Column) _
 		        And Board.Rank(Row, Column - 4) = Ranks.Rook Then Moves.Append(-1:-2) ' queen-side castle
 		      End If
-		      
-		      For i As Integer = UBound(Moves) DownTo 0
-		        Dim m As Pair = Moves(i)
-		        Dim a As Integer = IsUnderAttack(Board, m.Left, m.Right)
-		        If a = -1 Or a = Board.Player(Row, Column) Then Continue
-		        Moves.Remove(i)
-		      Next
+		      '
+		      'For i As Integer = UBound(Moves) DownTo 0
+		      'Dim m As Pair = Moves(i)
+		      'Dim a As Integer = IsUnderAttack(Board, m.Left, m.Right)
+		      'If a = -1 Or a = Board.Player(Row, Column) Then Continue
+		      'Moves.Remove(i)
+		      'Next
 		      #pragma Warning "Todo"
 		      ' *Moving accross a check
 		      
@@ -192,11 +201,19 @@ Protected Module Rules
 		    If Board.Player(Row - 1, Column - 1) = Player_White Then moves.Append(Row - 1:Column - 1) ' capture
 		    If Board.Player(Row - 1, Column + 1) = Player_White Then moves.Append(Row - 1:Column + 1) ' capture
 		  End If
-		  If Row = 6 And Board.Player(Row, Column) = Player_Black Then moves.Append(Row - 2:Column)' opening double-move
-		  If Row = 1 And Board.Player(Row, Column) = Player_White Then moves.Append(Row + 2:Column)' opening double-move
 		  
-		  #pragma Warning "Todo"
-		  ' *en-passant
+		  If Row = 6 And Board.Player(Row, Column) = Player_Black And _
+		    Board.Player(Row - 2, Column) = -1 And _
+		    Board.Player(Row - 1, Column) = -1 _
+		    Then moves.Append(Row - 2:Column)' opening double-move
+		    
+		    If Row = 1 And Board.Player(Row, Column) = Player_White And _
+		      Board.Player(Row + 2, Column) = -1 And _
+		      Board.Player(Row + 1, Column) = -1 _
+		      Then moves.Append(Row + 2:Column)' opening double-move
+		      
+		      #pragma Warning "Todo"
+		      ' *en-passant
 		End Sub
 	#tag EndMethod
 
