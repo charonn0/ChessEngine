@@ -155,7 +155,8 @@ End
 		    c1 = CurrentPiece.Right
 		    If ChessEngine.Rules.IsLegalMove(Board, r1, c1, r, c) Then
 		      Call Board.Move(r1, c1, r, c)
-		    ElseIf r1 <> r And c1 <> c Then
+		    ElseIf r1 = r And c1 = c Then
+		    Else
 		      MsgBox("Illegal move")
 		    End If
 		    CurrentPiece = Nil
