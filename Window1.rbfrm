@@ -7,7 +7,7 @@ Begin Window Window1
    Frame           =   0
    FullScreen      =   False
    HasBackColor    =   False
-   Height          =   400
+   Height          =   4.0e+2
    ImplicitInstance=   True
    LiveResize      =   True
    MacProcID       =   0
@@ -21,26 +21,26 @@ Begin Window Window1
    MinWidth        =   64
    Placement       =   0
    Resizeable      =   True
-   Title           =   "Untitled"
+   Title           =   "Chess"
    Visible         =   True
-   Width           =   600
+   Width           =   4.0e+2
    Begin Canvas Canvas1
       AcceptFocus     =   ""
       AcceptTabs      =   ""
       AutoDeactivate  =   True
       Backdrop        =   ""
-      DoubleBuffer    =   False
+      DoubleBuffer    =   True
       Enabled         =   True
-      EraseBackground =   True
+      EraseBackground =   False
       Height          =   400
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
       Left            =   0
-      LockBottom      =   ""
+      LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
-      LockRight       =   ""
+      LockRight       =   True
       LockTop         =   True
       Scope           =   0
       TabIndex        =   0
@@ -77,13 +77,14 @@ End
 	#tag Event
 		Sub Paint(g As Graphics)
 		  If Board = Nil Then Return
-		  For X As Integer = 0 To Me.Width - 50 Step 50
-		    For Y As Integer = 0 To Me.Height - 50 Step 50
+		  Dim sz As Integer = Min(g.Width / 8, g.Height / 8)
+		  For X As Integer = 0 To Me.Width - sz Step sz
+		    For Y As Integer = 0 To Me.Height - sz Step sz
 		      Dim r, c As Integer
-		      r = Y / 50
-		      c = X / 50
+		      r = Y / sz
+		      c = X / sz
 		      g.ForeColor = Board.SquareColor(r, c)
-		      g.FillRect(X, Y, 50, 50)
+		      g.FillRect(X, Y, sz, sz)
 		      Dim isblack As Boolean = Board.Player(r, c) = ChessEngine.Player_Black
 		      Dim symbol As Picture
 		      Select Case Board.Rank(r, c)
@@ -124,9 +125,20 @@ End
 		          symbol = WK
 		        End If
 		      End Select
-		      If symbol <> Nil Then g.DrawPicture(symbol, X, Y, 50, 50, 0, 0, symbol.Width, symbol.Height)
+		      If symbol <> Nil Then g.DrawPicture(symbol, X, Y, sz, sz, 0, 0, symbol.Width, symbol.Height)
 		    Next
 		  Next
+		  If CurrentPiece <> Nil Then
+		    g.ForeColor = &c00800000
+		    g.PenHeight = 3
+		    g.PenWidth = 3
+		    For Each m As Pair In ChessEngine.Rules.GetLegalMoves(Board, CurrentPiece.Left, CurrentPiece.Right)
+		      g.DrawRect(m.Right * sz, m.Left * sz, sz, sz)
+		    Next
+		    g.ForeColor = &c0080FF00
+		    g.DrawRect(CurrentPiece.Right * sz, CurrentPiece.Left * sz, sz, sz)
+		  End If
+		  
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -135,14 +147,15 @@ End
 		  c = X \ 50
 		  r = Y \ 50
 		  If CurrentPiece = Nil Then
+		    If Board.Rank(r, c) = ChessEngine.Ranks.None Then Return False
 		    CurrentPiece = r:c
 		  Else
 		    Dim r1, c1 As Integer
 		    r1 = CurrentPiece.Left
 		    c1 = CurrentPiece.Right
-		    If Board.IsLegalMove(r1, c1, r, c) Then
+		    If ChessEngine.Rules.IsLegalMove(Board, r1, c1, r, c) Then
 		      Call Board.Move(r1, c1, r, c)
-		    Else
+		    ElseIf r1 <> r And c1 <> c Then
 		      MsgBox("Illegal move")
 		    End If
 		    CurrentPiece = Nil

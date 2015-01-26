@@ -60,7 +60,7 @@ Protected Class Board
 	#tag Method, Flags = &h0
 		Function Rank(Row As Integer, Column As Integer) As ChessEngine.Ranks
 		  Return Operator_Subscript(Row, Column).Lookup("Rank", ChessEngine.Ranks.None)
-		Exception 
+		Exception
 		  Return Ranks.OutOfBounds
 		End Function
 	#tag EndMethod
